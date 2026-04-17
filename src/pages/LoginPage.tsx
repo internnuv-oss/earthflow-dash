@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -71,12 +70,6 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
               Sign In
             </Button>
-            <p className="text-xs text-center text-muted-foreground">
-              New Territory Head?{' '}
-              <Link to="/register" className="text-primary font-medium hover:underline">
-                Create an account
-              </Link>
-            </p>
           </form>
         </CardContent>
       </Card>
