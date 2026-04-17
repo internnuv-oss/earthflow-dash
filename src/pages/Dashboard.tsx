@@ -1,11 +1,12 @@
 import { useState, useEffect, useMemo } from 'react';
 import { getDealers } from '@/services/mockData';
+import { getFarmers, getDistributors } from '@/services/mockDirectoryData';
 import { Dealer } from '@/types/dealer';
 import KpiCard from '@/components/KpiCard';
 import DealerTable from '@/components/DealerTable';
 import DealerDetail from '@/components/DealerDetail';
 import AppLayout from '@/components/AppLayout';
-import { Users, Clock, AlertTriangle } from 'lucide-react';
+import { Users, Clock, AlertTriangle, Wheat, Truck } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -13,10 +14,14 @@ interface DashboardProps {
 
 const Dashboard = ({ onLogout }: DashboardProps) => {
   const [dealers, setDealers] = useState<Dealer[]>([]);
+  const [farmerCount, setFarmerCount] = useState(0);
+  const [distributorCount, setDistributorCount] = useState(0);
   const [selectedDealer, setSelectedDealer] = useState<Dealer | null>(null);
 
   useEffect(() => {
     getDealers().then(setDealers);
+    getFarmers().then(f => setFarmerCount(f.length));
+    getDistributors().then(d => setDistributorCount(d.length));
   }, []);
 
   const kpis = useMemo(() => {
@@ -29,12 +34,27 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   return (
     <AppLayout onLogout={onLogout}>
       {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
         <KpiCard
           title="Total Dealers Onboarded"
           value={kpis.total}
           icon={Users}
           description="All onboarded dealers"
+          to="/dashboard"
+        />
+        <KpiCard
+          title="Total Farmers"
+          value={farmerCount}
+          icon={Wheat}
+          description="Browse farmer directory"
+          to="/farmers"
+        />
+        <KpiCard
+          title="Total Distributors"
+          value={distributorCount}
+          icon={Truck}
+          description="Browse distributor directory"
+          to="/distributors"
         />
         <KpiCard
           title="Pending Approvals"
