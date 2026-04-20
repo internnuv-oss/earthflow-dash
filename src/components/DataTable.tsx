@@ -57,8 +57,9 @@ export function DataTable<T>({
 
   const filtered = useMemo(() => {
     const q = search.trim().toLowerCase();
-    return data.filter(row => {
-      if (q && !searchAccessor(row).toLowerCase().includes(q)) return false;
+    return (data || []).filter(row => {
+      const rowValue = searchAccessor(row) || '';
+      if (q && !String(rowValue).toLowerCase().includes(q)) return false;
       for (const f of filters) {
         const v = filterValues[f.key];
         if (v && v !== 'all' && !f.predicate(row, v)) return false;

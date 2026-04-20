@@ -19,15 +19,16 @@ const Dashboard = ({ onLogout }: DashboardProps) => {
   const [selectedDealer, setSelectedDealer] = useState<Dealer | null>(null);
 
   useEffect(() => {
-    getDealers().then(setDealers);
-    getFarmers().then(f => setFarmerCount(f.length));
-    getDistributors().then(d => setDistributorCount(d.length));
+    getDealers().then(data => setDealers(data || []));
+    getFarmers().then(f => setFarmerCount((f || []).length));
+    getDistributors().then(d => setDistributorCount((d || []).length));
   }, []);
 
   const kpis = useMemo(() => {
-    const total = dealers.length;
-    const pending = dealers.filter(d => d.status === 'DRAFT').length;
-    const redCount = dealers.filter(d => d.recommendation === 'Red').length;
+    const safeDealers = dealers || [];
+    const total = safeDealers.length;
+    const pending = safeDealers.filter(d => d?.status === 'DRAFT').length;
+    const redCount = safeDealers.filter(d => d?.recommendation === 'Red').length;
     return { total, pending, redCount };
   }, [dealers]);
 
