@@ -1,6 +1,6 @@
 import { ReactNode } from 'react';
 import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Sprout, LogOut, Users, Wheat, Truck } from 'lucide-react';
+import { Sprout, LogOut, Users, Wheat, Truck, LayoutDashboard } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { cn } from '@/lib/utils';
 
@@ -9,8 +9,9 @@ interface AppLayoutProps {
   onLogout: () => void;
 }
 
-const navItems = [
-  { to: '/dashboard', label: 'Dealers', icon: Users },
+const navItems: { to: string; label: string; icon: typeof Users; end?: boolean }[] = [
+  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/dealers', label: 'Dealers', icon: Users },
   { to: '/farmers', label: 'Farmers', icon: Wheat },
   { to: '/distributors', label: 'Distributors', icon: Truck },
 ];
@@ -42,6 +43,7 @@ const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
               <NavLink
                 key={item.to}
                 to={item.to}
+                end={item.end}
                 className={({ isActive }) =>
                   cn(
                     'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
