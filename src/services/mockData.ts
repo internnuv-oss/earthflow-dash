@@ -79,6 +79,7 @@ function generateDealer(index: number): Dealer {
     },
     signature_url: 'https://res.cloudinary.com/demo/image/upload/v1/sample_signature.jpg',
     status: statuses[index % 2],
+    is_active: index % 7 !== 0,
     created_at: new Date(2024, 0, 1 + index).toISOString(),
     updated_at: new Date(2024, 5, 1 + index).toISOString(),
   };

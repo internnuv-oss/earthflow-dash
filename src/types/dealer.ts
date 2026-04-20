@@ -63,6 +63,7 @@ export interface Dealer {
   pdf_url?: string;
   shop_location?: ShopLocation;
   status: DealerStatus;
+  is_active: boolean;
   created_at: string;
   updated_at: string;
 }

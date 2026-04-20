@@ -33,6 +33,7 @@ function generateFarmer(i: number): Farmer {
     irrigation_type: IRRIGATION[i % IRRIGATION.length],
     aadhaar_masked: `XXXX-XXXX-${1000 + i}`,
     status: FARMER_STATUSES[i % FARMER_STATUSES.length],
+    is_active: i % 6 !== 0,
     created_at: new Date(2024, 0, 1 + i).toISOString(),
   };
 }
@@ -64,6 +65,7 @@ function generateDistributor(i: number): Distributor {
     product_categories: CATEGORIES[i % CATEGORIES.length],
     gst_number: `27BBBBB${2000 + i}B1Z5`,
     status: DIST_STATUSES[i % DIST_STATUSES.length],
+    is_active: i % 5 !== 0,
     created_at: new Date(2024, 1, 1 + i).toISOString(),
   };
 }
