@@ -2,11 +2,11 @@ import { useState, useEffect, useMemo } from 'react';
 import { getDealers } from '@/services/mockData';
 import { getFarmers, getDistributors } from '@/services/mockDirectoryData';
 import { Dealer } from '@/types/dealer';
+import { Farmer } from '@/types/farmer';
+import { Distributor } from '@/types/distributor';
 import KpiCard from '@/components/KpiCard';
-import DealerTable from '@/components/DealerTable';
-import DealerDetail from '@/components/DealerDetail';
 import AppLayout from '@/components/AppLayout';
-import { Users, Clock, AlertTriangle, Wheat, Truck } from 'lucide-react';
+import { Users, Clock, AlertTriangle, Wheat, Truck, UserCog } from 'lucide-react';
 
 interface DashboardProps {
   onLogout: () => void;
@@ -14,77 +14,94 @@ interface DashboardProps {
 
 const Dashboard = ({ onLogout }: DashboardProps) => {
   const [dealers, setDealers] = useState<Dealer[]>([]);
-  const [farmerCount, setFarmerCount] = useState(0);
-  const [distributorCount, setDistributorCount] = useState(0);
-  const [selectedDealer, setSelectedDealer] = useState<Dealer | null>(null);
+  const [farmers, setFarmers] = useState<Farmer[]>([]);
+  const [distributors, setDistributors] = useState<Distributor[]>([]);
 
   useEffect(() => {
     getDealers().then(data => setDealers(data || []));
-    getFarmers().then(f => setFarmerCount((f || []).length));
-    getDistributors().then(d => setDistributorCount((d || []).length));
+    getFarmers().then(data => setFarmers(data || []));
+    getDistributors().then(data => setDistributors(data || []));
   }, []);
 
   const kpis = useMemo(() => {
     const safeDealers = dealers || [];
-    const total = safeDealers.length;
-    const pending = safeDealers.filter(d => d?.status === 'DRAFT').length;
+    const safeFarmers = farmers || [];
+    const safeDistributors = distributors || [];
+
+    const seIds = new Set<string>();
+    safeDealers.forEach(d => d?.se_id && seIds.add(d.se_id));
+    safeFarmers.forEach(f => f?.se_id && seIds.add(f.se_id));
+    safeDistributors.forEach(d => d?.se_id && seIds.add(d.se_id));
+
+    const pending =
+      safeDealers.filter(d => d?.status === 'DRAFT').length +
+      safeFarmers.filter(f => f?.status === 'DRAFT').length +
+      safeDistributors.filter(d => d?.status === 'DRAFT').length;
+
     const redCount = safeDealers.filter(d => d?.recommendation === 'Red').length;
-    return { total, pending, redCount };
-  }, [dealers]);
+
+    return {
+      totalDealers: safeDealers.length,
+      totalFarmers: safeFarmers.length,
+      totalDistributors: safeDistributors.length,
+      totalSEs: seIds.size,
+      pending,
+      redCount,
+    };
+  }, [dealers, farmers, distributors]);
 
   return (
     <AppLayout onLogout={onLogout}>
-      {/* KPI Cards */}
-      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-5 gap-4">
+      <div>
+        <h2 className="text-lg font-semibold mb-1">Overview</h2>
+        <p className="text-sm text-muted-foreground mb-4">
+          Global command center across dealers, distributors, and farmers.
+        </p>
+      </div>
+
+      <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
         <KpiCard
-          title="Total Dealers Onboarded"
-          value={kpis.total}
+          title="Total Dealers"
+          value={kpis.totalDealers}
           icon={Users}
-          description="All onboarded dealers"
-          to="/dashboard"
-        />
-        <KpiCard
-          title="Total Farmers"
-          value={farmerCount}
-          icon={Wheat}
-          description="Browse farmer directory"
-          to="/farmers"
+          description="View dealer directory"
+          to="/dealers"
         />
         <KpiCard
           title="Total Distributors"
-          value={distributorCount}
+          value={kpis.totalDistributors}
           icon={Truck}
-          description="Browse distributor directory"
+          description="View distributors"
           to="/distributors"
+        />
+        <KpiCard
+          title="Total Farmers"
+          value={kpis.totalFarmers}
+          icon={Wheat}
+          description="View farmers"
+          to="/farmers"
+        />
+        <KpiCard
+          title="Total SEs"
+          value={kpis.totalSEs}
+          icon={UserCog}
+          description="Active sales executives"
         />
         <KpiCard
           title="Pending Approvals"
           value={kpis.pending}
           icon={Clock}
-          description="Draft submissions"
+          description="Drafts across all directories"
           accent="muted"
         />
         <KpiCard
-          title="High Risk Dealers"
+          title="High Risk"
           value={kpis.redCount}
           icon={AlertTriangle}
-          description="Red recommendation"
+          description="Red recommendation dealers"
           accent="destructive"
         />
       </div>
-
-      {/* Dealer Table */}
-      <div>
-        <h2 className="text-lg font-semibold mb-3">Dealer Directory</h2>
-        <DealerTable dealers={dealers} onSelectDealer={setSelectedDealer} />
-      </div>
-
-      {/* Detail Dialog */}
-      <DealerDetail
-        dealer={selectedDealer}
-        open={!!selectedDealer}
-        onClose={() => setSelectedDealer(null)}
-      />
     </AppLayout>
   );
 };
