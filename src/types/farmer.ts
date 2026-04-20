@@ -14,5 +14,6 @@ export interface Farmer {
   irrigation_type: 'Borewell' | 'Canal' | 'Rainfed' | 'Drip';
   aadhaar_masked: string;
   status: FarmerStatus;
+  is_active: boolean;
   created_at: string;
 }

@@ -13,5 +13,6 @@ export interface Distributor {
   product_categories: string;
   gst_number: string;
   status: DistributorStatus;
+  is_active: boolean;
   created_at: string;
 }
