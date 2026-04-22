@@ -21,33 +21,6 @@ const DealersPage = ({ onLogout }: DealersPageProps) => {
     setDealers(prev => (prev || []).map(d => (d.id === id ? { ...d, is_active: value } : d)));
   };
 
-  const handleSaveProfiling = (
-    id: string,
-    updates: { scoring: any; commitments: any; total_score: number },
-  ) => {
-    setDealers(prev =>
-      (prev || []).map(d =>
-        d.id === id
-          ? {
-              ...d,
-              scoring: updates.scoring,
-              commitments: updates.commitments,
-              total_score: updates.total_score,
-            }
-          : d,
-      ),
-    );
-    setSelectedDealer(prev =>
-      prev && prev.id === id
-        ? {
-            ...prev,
-            scoring: updates.scoring,
-            commitments: updates.commitments,
-            total_score: updates.total_score,
-          }
-        : prev,
-    );
-  };
 
   return (
     <AppLayout onLogout={onLogout}>
@@ -66,7 +39,6 @@ const DealersPage = ({ onLogout }: DealersPageProps) => {
         dealer={selectedDealer}
         open={!!selectedDealer}
         onClose={() => setSelectedDealer(null)}
-        onSave={handleSaveProfiling}
       />
     </AppLayout>
   );
