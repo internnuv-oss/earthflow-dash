@@ -1,5 +1,5 @@
 import { NavLink, useLocation } from 'react-router-dom';
-import { LayoutDashboard, Users, Wheat, Truck, Sprout } from 'lucide-react';
+import { LayoutDashboard, Users, Wheat, Truck, Sprout, Settings } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 const navItems = [
@@ -9,12 +9,39 @@ const navItems = [
   { to: '/distributors', label: 'Distributors', icon: Truck },
 ];
 
+const bottomNavItems = [
+  { to: '/settings', label: 'Settings', icon: Settings, end: false as boolean | undefined },
+];
+
 interface AppSidebarProps {
   onNavigate?: () => void;
 }
 
 const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
   const location = useLocation();
+
+  const renderLink = (item: { to: string; label: string; icon: typeof Users; end?: boolean }) => {
+    const active = item.end
+      ? location.pathname === item.to
+      : location.pathname.startsWith(item.to);
+    return (
+      <NavLink
+        key={item.to}
+        to={item.to}
+        end={item.end}
+        onClick={onNavigate}
+        className={cn(
+          'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
+          active
+            ? 'bg-primary/10 text-primary'
+            : 'text-muted-foreground hover:bg-accent hover:text-foreground',
+        )}
+      >
+        <item.icon className="h-4 w-4 shrink-0" />
+        <span>{item.label}</span>
+      </NavLink>
+    );
+  };
 
   return (
     <aside className="flex h-full w-full flex-col border-r border-border bg-card">
@@ -29,29 +56,12 @@ const AppSidebar = ({ onNavigate }: AppSidebarProps) => {
       </div>
 
       <nav className="flex-1 p-3 space-y-1">
-        {(navItems || []).map(item => {
-          const active = item.end
-            ? location.pathname === item.to
-            : location.pathname.startsWith(item.to);
-          return (
-            <NavLink
-              key={item.to}
-              to={item.to}
-              end={item.end}
-              onClick={onNavigate}
-              className={cn(
-                'flex items-center gap-3 px-3 py-2 rounded-md text-sm font-medium transition-colors',
-                active
-                  ? 'bg-primary/10 text-primary'
-                  : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-              )}
-            >
-              <item.icon className="h-4 w-4 shrink-0" />
-              <span>{item.label}</span>
-            </NavLink>
-          );
-        })}
+        {(navItems || []).map(renderLink)}
       </nav>
+
+      <div className="p-3 space-y-1 border-t border-border">
+        {(bottomNavItems || []).map(renderLink)}
+      </div>
     </aside>
   );
 };
