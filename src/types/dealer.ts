@@ -5,21 +5,9 @@ export interface BankDetails {
   bankBranch: string;
 }
 
-export interface Scoring {
-  financial: number;
-  reputation: number;
-  infrastructure: number;
-  marketPresence: number;
-  compliance: number;
-}
+export type Scoring = Record<string, any>;
 
-export interface Commitments {
-  creditPolicy: boolean;
-  exclusivity: boolean;
-  targetAchievement: boolean;
-  returnPolicy: boolean;
-  paymentTerms: boolean;
-}
+export type Commitments = Record<string, any> | Array<{ id: string; text: string; checked: boolean }>;
 
 export interface Documents {
   gstUrl?: string;
