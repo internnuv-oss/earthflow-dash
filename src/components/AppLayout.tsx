@@ -1,23 +1,18 @@
-import { ReactNode } from 'react';
-import { Link, NavLink, useNavigate } from 'react-router-dom';
-import { Sprout, LogOut, Users, Wheat, Truck, LayoutDashboard } from 'lucide-react';
+import { ReactNode, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
+import { LogOut, Menu, Sprout } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { cn } from '@/lib/utils';
+import { Sheet, SheetContent, SheetTrigger } from '@/components/ui/sheet';
+import AppSidebar from './AppSidebar';
 
 interface AppLayoutProps {
   children: ReactNode;
   onLogout: () => void;
 }
 
-const navItems: { to: string; label: string; icon: typeof Users; end?: boolean }[] = [
-  { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
-  { to: '/dealers', label: 'Dealers', icon: Users },
-  { to: '/farmers', label: 'Farmers', icon: Wheat },
-  { to: '/distributors', label: 'Distributors', icon: Truck },
-];
-
 const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
   const navigate = useNavigate();
+  const [mobileOpen, setMobileOpen] = useState(false);
 
   const handleLogout = () => {
     onLogout();
@@ -25,48 +20,48 @@ const AppLayout = ({ children, onLogout }: AppLayoutProps) => {
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      <header className="sticky top-0 z-50 border-b border-border bg-card/80 backdrop-blur-sm">
-        <div className="container flex h-16 items-center justify-between gap-4">
-          <Link to="/dashboard" className="flex items-center gap-3 shrink-0">
-            <div className="flex h-9 w-9 items-center justify-center rounded-lg bg-primary/10">
-              <Sprout className="h-5 w-5 text-primary" />
-            </div>
-            <div className="hidden sm:block">
-              <h1 className="text-lg font-bold leading-none">AgriDealer Admin</h1>
-              <p className="text-xs text-muted-foreground">Territory Head Dashboard</p>
-            </div>
-          </Link>
+    <div className="flex min-h-screen w-full bg-background">
+      {/* Desktop sidebar */}
+      <div className="hidden md:flex w-[250px] shrink-0">
+        <AppSidebar />
+      </div>
 
-          <nav className="flex items-center gap-1 overflow-x-auto">
-            {navItems.map(item => (
-              <NavLink
-                key={item.to}
-                to={item.to}
-                end={item.end}
-                className={({ isActive }) =>
-                  cn(
-                    'flex items-center gap-1.5 px-3 py-2 rounded-md text-sm font-medium whitespace-nowrap transition-colors',
-                    isActive
-                      ? 'bg-primary/10 text-primary'
-                      : 'text-muted-foreground hover:bg-accent hover:text-foreground',
-                  )
-                }
-              >
-                <item.icon className="h-4 w-4" />
-                <span className="hidden sm:inline">{item.label}</span>
-              </NavLink>
-            ))}
-          </nav>
+      <div className="flex-1 flex flex-col min-w-0">
+        {/* Mobile header */}
+        <header className="md:hidden sticky top-0 z-40 flex h-14 items-center justify-between gap-2 border-b border-border bg-card/80 backdrop-blur-sm px-4">
+          <Sheet open={mobileOpen} onOpenChange={setMobileOpen}>
+            <SheetTrigger asChild>
+              <Button variant="ghost" size="icon" aria-label="Open menu">
+                <Menu className="h-5 w-5" />
+              </Button>
+            </SheetTrigger>
+            <SheetContent side="left" className="p-0 w-[260px]">
+              <AppSidebar onNavigate={() => setMobileOpen(false)} />
+            </SheetContent>
+          </Sheet>
 
-          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 text-muted-foreground shrink-0">
+          <div className="flex items-center gap-2">
+            <div className="flex h-8 w-8 items-center justify-center rounded-lg bg-primary/10">
+              <Sprout className="h-4 w-4 text-primary" />
+            </div>
+            <span className="text-sm font-semibold">AgriDealer Admin</span>
+          </div>
+
+          <Button variant="ghost" size="icon" onClick={handleLogout} aria-label="Logout">
             <LogOut className="h-4 w-4" />
-            <span className="hidden sm:inline">Logout</span>
           </Button>
-        </div>
-      </header>
+        </header>
 
-      <main className="container py-6 space-y-6">{children}</main>
+        {/* Desktop top bar with logout */}
+        <header className="hidden md:flex sticky top-0 z-40 h-14 items-center justify-end border-b border-border bg-card/80 backdrop-blur-sm px-6">
+          <Button variant="ghost" size="sm" onClick={handleLogout} className="gap-2 text-muted-foreground">
+            <LogOut className="h-4 w-4" />
+            <span>Logout</span>
+          </Button>
+        </header>
+
+        <main className="flex-1 px-4 md:px-6 py-6 space-y-6 max-w-[1400px] w-full">{children}</main>
+      </div>
     </div>
   );
 };
