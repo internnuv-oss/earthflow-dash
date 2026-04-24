@@ -447,11 +447,27 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
         text: c?.text,
         checked_by_default: c?.checkedByDefault,
       })),
-      agreement_schema: (agreementTerms || []).map(t => ({
-        id: t?.id,
-        title: t?.title,
-        content: t?.content,
-      })),
+      agreement_schema: {
+        annexures: (annexures || []).map(a => ({
+          id: a?.id,
+          title: a?.title,
+          fields: (a?.fields || []).map(f => ({
+            id: f?.id,
+            label: f?.label,
+            is_input: f?.isInput,
+          })),
+        })),
+        terms: (terms || []).map(t => ({
+          id: t?.id,
+          title: t?.title,
+          content: t?.content,
+          obligations: t?.obligations,
+        })),
+        final_commitments: (finalCommitments || []).map(f => ({
+          id: f?.id,
+          text: f?.text,
+        })),
+      },
     };
 
     // TODO: supabase.from('form_templates').upsert({ type, scoring_schema, commitments_schema, agreement_schema })
