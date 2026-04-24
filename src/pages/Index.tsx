@@ -7,6 +7,7 @@ import DealersPage from './DealersPage';
 import FarmersPage from './FarmersPage';
 import DistributorsPage from './DistributorsPage';
 import SettingsPage from './SettingsPage';
+import SettingsTemplatePage from './SettingsTemplatePage';
 import NotFound from './NotFound';
 
 const Index = () => {
@@ -28,7 +29,11 @@ const Index = () => {
       <Route path="/dealers" element={guard(<DealersPage onLogout={logout} />)} />
       <Route path="/farmers" element={guard(<FarmersPage onLogout={logout} />)} />
       <Route path="/distributors" element={guard(<DistributorsPage onLogout={logout} />)} />
-      <Route path="/settings" element={guard(<SettingsPage onLogout={logout} />)} />
+      <Route path="/settings" element={guard(<Navigate to="/settings/dealer" replace />)} />
+      <Route path="/settings/dealer" element={guard(<SettingsTemplatePage type="dealer" onLogout={logout} />)} />
+      <Route path="/settings/farmer" element={guard(<SettingsTemplatePage type="farmer" onLogout={logout} />)} />
+      <Route path="/settings/distributor" element={guard(<SettingsTemplatePage type="distributor" onLogout={logout} />)} />
+      <Route path="/settings/legacy" element={guard(<SettingsPage onLogout={logout} />)} />
       <Route path="*" element={<NotFound />} />
     </Routes>
   );
