@@ -47,10 +47,25 @@ interface CommitmentItem {
   checkedByDefault: boolean;
 }
 
-interface AgreementTerm {
+interface AnnexureField {
+  id: string;
+  label: string;
+  isInput: boolean;
+}
+interface Annexure {
+  id: string;
+  title: string;
+  fields: AnnexureField[];
+}
+interface TermCondition {
   id: string;
   title: string;
   content: string;
+  obligations?: string;
+}
+interface FinalCommitment {
+  id: string;
+  text: string;
 }
 
 type TemplateType = 'dealer' | 'farmer' | 'distributor';
@@ -181,27 +196,49 @@ const DISTRIBUTOR_COMMITMENTS: CommitmentItem[] = [
   { id: 'dc5', text: 'Payment & Credit Terms Agreed', checkedByDefault: true },
 ];
 
-const INITIAL_DEALER_AGREEMENT: AgreementTerm[] = [
-  { id: 'a1', title: 'Annexure – A: Territory Coverage', content: 'Talukas covered:\nVillages covered:\nTotal cultivable area:\nMajor crops in territory:' },
-  { id: 'a2', title: 'Annexure – B: Principal Companies & Product Range', content: '1. Principal suppliers:\n2. Chemical products range:\n3. Biological / organic products range:\n4. Other products:' },
-  { id: 'a3', title: 'Annexure – C: Infrastructure Details', content: 'Godown / storage capacity:\nPhotos:' },
-  { id: 'a4', title: 'Annexure – D: Bank & Credit References', content: 'List of references with Name, Contact, and Behavior/Feedback.' },
-  { id: 'a5', title: 'Annexure – E: Monthly Sales Reporting Format', content: 'Confirmation that they will share monthly GLS sales breakup (dealer-wise, crop-wise).' },
-  { id: 'a6', title: 'Annexure – F: Future Expansion Plan', content: 'Their 2-year growth vision and willingness to focus on biologicals.' },
-  { id: 't0', title: 'Terms & Conditions Introduction', content: 'The following terms form an integral part of the Dealer Appointment Letter / MoU and are binding upon signing.' },
+const DEALER_ANNEXURES: Annexure[] = [
+  { id: 'anx1', title: 'Annexure – A: Territory Coverage', fields: [
+    { id: 'f1', label: 'Talukas covered:', isInput: true },
+    { id: 'f2', label: 'Villages covered:', isInput: true },
+    { id: 'f3', label: 'Total cultivable area:', isInput: true },
+    { id: 'f4', label: 'Major crops in territory:', isInput: true },
+  ]},
+  { id: 'anx2', title: 'Annexure – B: Principal Companies & Product Range', fields: [
+    { id: 'f5', label: '1. Principal suppliers:', isInput: true },
+    { id: 'f6', label: '2. Chemical products range:', isInput: true },
+    { id: 'f7', label: '3. Biological / organic products range:', isInput: true },
+    { id: 'f8', label: '4. Other products:', isInput: true },
+  ]},
+  { id: 'anx3', title: 'Annexure – C: Infrastructure Details', fields: [
+    { id: 'f9', label: 'Godown / storage capacity:', isInput: true },
+    { id: 'f10', label: 'Photos required:', isInput: false },
+  ]},
+  { id: 'anx4', title: 'Annexure – D: Bank & Credit References', fields: [
+    { id: 'f11', label: 'List of references with Name, Contact, and Behavior/Feedback.', isInput: true },
+  ]},
+  { id: 'anx5', title: 'Annexure – E: Monthly Sales Reporting Format', fields: [
+    { id: 'f12', label: 'Confirmation that they will share monthly GLS sales breakup.', isInput: false },
+  ]},
+  { id: 'anx6', title: 'Annexure – F: Future Expansion Plan', fields: [
+    { id: 'f13', label: 'Their 2-year growth vision and willingness to focus on biologicals.', isInput: true },
+  ]},
+];
+
+const DEALER_TERMS: TermCondition[] = [
   { id: 't1', title: '1. Territory:', content: 'The Dealer shall operate primarily in the villages / area mentioned in Annexure A. The Dealer agrees not to actively sell GLS products outside the agreed area without prior approval.' },
-  { id: 't2', title: '2. Status & Focus:', content: 'As an Authorised Dealer, the Dealer can directly honour GLS farmer schemes, loyalty benefits, and Farm Card discounts.\nAs an Exclusive Dealer, the Dealer shall focus primarily on GLS biological products and receive maximum field and marketing support.' },
-  { id: 't3', title: '3. Payment Terms:', content: 'Payment to be made to the linked Distributor as per mutually agreed terms.\nTimely payment is essential to maintain smooth supply and scheme benefits.\nDelayed payments may result in temporary suspension of supplies or scheme eligibility.' },
-  { id: 't4', title: '4. Security Deposit:', content: '(if applicable) A nominal refundable security deposit may be required as per Distributor / GLS policy.' },
-  { id: 't5', title: '5. Stock Maintenance:', content: 'The Dealer shall maintain adequate stock of GLS products to meet local farmer demand and shall store them properly (cool, dry place, away from direct sunlight).' },
-  { id: 't6', title: '6. Technical & Marketing Support from GLS:', content: 'Access to dedicated Field Executives for farmer guidance and demonstrations.\nCrop-specific packages, Farm Card + Calendar, application training, and promotional material.\nFull participation in company-funded loyalty program and special schemes.' },
-  { id: 't7', title: '7. Dealer Obligations:', content: '• Promote GLS products following recommended crop packages and practices.\n• Allow GLS Field Executives to engage directly with farmers linked to the shop.\n• Honour Farm Card, loyalty benefits, and crop-specific discounts for eligible farmers.\n• Maintain proper records of sales and farmer feedback.\n• Ensure the shop has valid FCO authorization and Insecticide selling license (where required).\n• Participate in demonstrations, farmer meetings, and training programs organized by GLS.' },
-  { id: 't8', title: '8. Legal & Compliance:', content: 'The Dealer must hold and maintain all necessary licenses (FCO for biofertilizers, Insecticide License for biopesticides, GST, Shop & Establishment). GLS shall not be responsible for any legal issues arising from the Dealer\u2019s non-compliance.' },
-  { id: 't9', title: '9. Data Sharing and Confidentiality:', content: 'The Dealer agrees to share with GLS (and its authorised Field Executives) all necessary data generated during the partnership, including but not limited to:\n• Farmer details (name, contact, farm location, crop history, Farm Card records, application data, yield feedback).\n• Sales records of GLS products.\n• Any other information required for technical support, loyalty program execution, monitoring results, and business improvement.' },
-  { id: 't9a', title: 'Obligations (Under Clause 9):', content: 'All shared data will be used by GLS only for the purpose of supporting farmers, implementing crop packages, running the loyalty program, and strengthening the partnership.\nThe Dealer shall collect farmer consent where personal data is involved and shall comply with applicable data protection laws.\nBoth parties shall keep all shared information confidential and shall not disclose it to any third party without prior written consent, except as required by law.\nUpon termination or request, the Dealer shall return or securely delete all GLS-related data in its possession.\nGLS shall similarly protect any confidential business information of the Dealer.' },
-  { id: 't10', title: '10. Termination:', content: 'Either party may terminate the appointment with 30 days\u2019 written notice. Immediate termination may occur for breach of payment, license violation, misuse of data, or actions damaging GLS reputation. On termination, all pending dues must be settled and remaining stock adjusted.' },
+  { id: 't2', title: '2. Status & Focus:', content: 'As an Authorised Dealer, the Dealer can directly honour GLS farmer schemes... As an Exclusive Dealer, the Dealer shall focus primarily on GLS biological products...' },
+  { id: 't3', title: '3. Payment Terms:', content: 'Payment to be made to the linked Distributor as per mutually agreed terms. Timely payment is essential...' },
+  { id: 't8', title: '8. Legal & Compliance:', content: 'The Dealer must hold and maintain all necessary licenses...' },
+  { id: 't9', title: '9. Data Sharing and Confidentiality:', content: 'The Dealer agrees to share with GLS all necessary data generated during the partnership, including Farmer details and Sales records.', obligations: 'All shared data will be used by GLS only for the purpose of supporting farmers...\nThe Dealer shall collect farmer consent...\nBoth parties shall keep all shared information confidential...' },
+  { id: 't10', title: '10. Termination:', content: 'Either party may terminate the appointment with 30 days written notice...' },
   { id: 't11', title: '11. Jurisdiction:', content: 'All disputes shall be subject to the exclusive jurisdiction of courts in Vadodara, Gujarat.' },
-  { id: 't12', title: 'I/We agree to:', content: '• Promote GLS biological inputs following recommended crop packages.\n• Allow GLS field team to engage with my farmers for demos and support.\n• Honour loyalty program and Farm Card benefits for farmers.\n• Maintain proper storage and display for GLS products.' },
+];
+
+const DEALER_FINAL_COMMITMENTS: FinalCommitment[] = [
+  { id: 'fc1', text: 'Promote GLS biological inputs following recommended crop packages.' },
+  { id: 'fc2', text: 'Allow GLS field team to engage with my farmers for demos and support.' },
+  { id: 'fc3', text: 'Honour loyalty program and Farm Card benefits for farmers.' },
+  { id: 'fc4', text: 'Maintain proper storage and display for GLS products.' },
 ];
 
 const seedCategories = (type: TemplateType): ScoringCategory[] => {
@@ -216,8 +253,12 @@ const seedCommitments = (type: TemplateType): CommitmentItem[] => {
   return DISTRIBUTOR_COMMITMENTS;
 };
 
-const seedAgreement = (type: TemplateType): AgreementTerm[] =>
-  type === 'dealer' ? INITIAL_DEALER_AGREEMENT : [];
+const seedAnnexures = (type: TemplateType): Annexure[] =>
+  type === 'dealer' ? DEALER_ANNEXURES : [];
+const seedTerms = (type: TemplateType): TermCondition[] =>
+  type === 'dealer' ? DEALER_TERMS : [];
+const seedFinalCommitments = (type: TemplateType): FinalCommitment[] =>
+  type === 'dealer' ? DEALER_FINAL_COMMITMENTS : [];
 
 interface SettingsTemplatePageProps {
   type: TemplateType;
