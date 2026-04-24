@@ -697,47 +697,195 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
         </TabsContent>
 
         {/* Tab 3: Legal Agreement */}
-        <TabsContent value="agreement" className="mt-4 space-y-2">
-          <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
-            <FileText className="h-4 w-4" /> Legal Agreement Clauses
-            <span className="ml-auto text-xs text-muted-foreground font-normal">
-              {(agreementTerms || []).length} clauses
-            </span>
-          </h3>
+        <TabsContent value="agreement" className="mt-4 space-y-6">
+          {/* Block 1: Annexures */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Annexures
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(annexures || []).length} annexures
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-3">
+              {(annexures || []).map(anx => (
+                <Card key={anx.id} className="p-3 space-y-3 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={anx?.title || ''}
+                      onChange={e => updateAnnexure(anx.id, { title: e.target.value })}
+                      placeholder="Annexure title"
+                      className="h-9 flex-1 font-medium"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => deleteAnnexure(anx.id)}
+                      aria-label="Delete annexure"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {(anx?.fields || []).map(f => (
+                      <div
+                        key={f.id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-md border border-border bg-muted/30"
+                      >
+                        <Input
+                          value={f?.label || ''}
+                          onChange={e =>
+                            updateAnnexureField(anx.id, f.id, { label: e.target.value })
+                          }
+                          placeholder="Field label / statement"
+                          className="h-9 flex-1"
+                        />
+                        <label className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
+                          <Checkbox
+                            checked={!!f?.isInput}
+                            onCheckedChange={v =>
+                              updateAnnexureField(anx.id, f.id, { isInput: !!v })
+                            }
+                          />
+                          Requires SE Input?
+                        </label>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => deleteAnnexureField(anx.id, f.id)}
+                          aria-label="Delete field"
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addAnnexureField(anx.id)}
+                      className="gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add field
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+              <Button size="sm" variant="outline" onClick={addAnnexure} className="gap-1">
+                <Plus className="h-4 w-4" /> Add annexure
+              </Button>
+            </div>
+          </section>
+
           <Separator />
 
-          <div className="pt-2 space-y-3">
-            {(agreementTerms || []).map(term => (
-              <Card key={term.id} className="p-3 space-y-2 border border-border">
-                <div className="flex items-center gap-2">
+          {/* Block 2: Terms & Conditions */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Terms & Conditions
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(terms || []).length} terms
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-3">
+              {(terms || []).map(t => (
+                <Card key={t.id} className="p-3 space-y-2 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={t?.title || ''}
+                      onChange={e => updateTerm(t.id, { title: e.target.value })}
+                      placeholder="Term title"
+                      className="h-9 flex-1 font-medium"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => deleteTerm(t.id)}
+                      aria-label="Delete term"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={t?.content || ''}
+                    onChange={e => updateTerm(t.id, { content: e.target.value })}
+                    placeholder="Term content"
+                    className="min-h-[100px] text-sm"
+                  />
+                  {t?.obligations !== undefined ? (
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">Obligations Details</label>
+                      <Textarea
+                        value={t?.obligations || ''}
+                        onChange={e => updateTerm(t.id, { obligations: e.target.value })}
+                        placeholder="Obligations under this term"
+                        className="min-h-[100px] text-sm bg-muted"
+                      />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => toggleObligations(t.id)}
+                        className="gap-1 text-destructive"
+                      >
+                        <X className="h-4 w-4" /> Remove obligations
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => toggleObligations(t.id)}
+                      className="gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add obligations section
+                    </Button>
+                  )}
+                </Card>
+              ))}
+              <Button size="sm" variant="outline" onClick={addTerm} className="gap-1">
+                <Plus className="h-4 w-4" /> Add term
+              </Button>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Block 3: I/We Agree To */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> I / We Agree To (Final Commitments)
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(finalCommitments || []).length} items
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-2">
+              {(finalCommitments || []).map(fc => (
+                <div
+                  key={fc.id}
+                  className="flex items-center gap-2 p-2 rounded-md border border-border bg-card"
+                >
                   <Input
-                    value={term?.title || ''}
-                    onChange={e => updateTerm(term.id, { title: e.target.value })}
-                    placeholder="Clause title"
-                    className="h-9 flex-1 font-medium"
+                    value={fc?.text || ''}
+                    onChange={e => updateFinalCommitment(fc.id, e.target.value)}
+                    placeholder="Commitment text"
+                    className="h-9 flex-1"
                   />
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => deleteTerm(term.id)}
-                    aria-label="Delete clause"
+                    onClick={() => deleteFinalCommitment(fc.id)}
+                    aria-label="Delete commitment"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <Textarea
-                  value={term?.content || ''}
-                  onChange={e => updateTerm(term.id, { content: e.target.value })}
-                  placeholder="Clause content"
-                  className="min-h-[100px] text-sm"
-                />
-              </Card>
-            ))}
-
-            <Button size="sm" variant="outline" onClick={addTerm} className="gap-1">
-              <Plus className="h-4 w-4" /> Add new clause
-            </Button>
-          </div>
+              ))}
+              <Button size="sm" variant="outline" onClick={addFinalCommitment} className="gap-1">
+                <Plus className="h-4 w-4" /> Add commitment
+              </Button>
+            </div>
+          </section>
         </TabsContent>
       </Tabs>
 
