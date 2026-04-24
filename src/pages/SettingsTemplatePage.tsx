@@ -268,7 +268,11 @@ interface SettingsTemplatePageProps {
 const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => {
   const [categories, setCategories] = useState<ScoringCategory[]>(() => seedCategories(type));
   const [commitments, setCommitments] = useState<CommitmentItem[]>(() => seedCommitments(type));
-  const [agreementTerms, setAgreementTerms] = useState<AgreementTerm[]>(() => seedAgreement(type));
+  const [annexures, setAnnexures] = useState<Annexure[]>(() => seedAnnexures(type));
+  const [terms, setTerms] = useState<TermCondition[]>(() => seedTerms(type));
+  const [finalCommitments, setFinalCommitments] = useState<FinalCommitment[]>(() =>
+    seedFinalCommitments(type),
+  );
 
   const totalMax = useMemo(
     () => (categories || []).reduce((sum, c) => sum + (Number(c?.maxScore) || 0), 0),
@@ -345,16 +349,81 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
   const deleteCommitment = (id: string) =>
     setCommitments(prev => (prev || []).filter(c => c.id !== id));
 
-  // ===== Agreement CRUD =====
-  const updateTerm = (id: string, patch: Partial<AgreementTerm>) =>
-    setAgreementTerms(prev => (prev || []).map(t => (t.id === id ? { ...t, ...patch } : t)));
-  const addTerm = () =>
-    setAgreementTerms(prev => [
+  // ===== Annexures CRUD =====
+  const updateAnnexure = (id: string, patch: Partial<Annexure>) =>
+    setAnnexures(prev => (prev || []).map(a => (a.id === id ? { ...a, ...patch } : a)));
+  const addAnnexure = () =>
+    setAnnexures(prev => [
       ...(prev || []),
-      { id: `term_${Date.now()}`, title: 'New clause', content: '' },
+      { id: `anx_${Date.now()}`, title: 'New Annexure', fields: [] },
+    ]);
+  const deleteAnnexure = (id: string) =>
+    setAnnexures(prev => (prev || []).filter(a => a.id !== id));
+  const addAnnexureField = (annexureId: string) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? {
+              ...a,
+              fields: [
+                ...(a.fields || []),
+                { id: `f_${Date.now()}`, label: '', isInput: true },
+              ],
+            }
+          : a,
+      ),
+    );
+  const updateAnnexureField = (
+    annexureId: string,
+    fieldId: string,
+    patch: Partial<AnnexureField>,
+  ) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? {
+              ...a,
+              fields: (a.fields || []).map(f => (f.id === fieldId ? { ...f, ...patch } : f)),
+            }
+          : a,
+      ),
+    );
+  const deleteAnnexureField = (annexureId: string, fieldId: string) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? { ...a, fields: (a.fields || []).filter(f => f.id !== fieldId) }
+          : a,
+      ),
+    );
+
+  // ===== Terms CRUD =====
+  const updateTerm = (id: string, patch: Partial<TermCondition>) =>
+    setTerms(prev => (prev || []).map(t => (t.id === id ? { ...t, ...patch } : t)));
+  const addTerm = () =>
+    setTerms(prev => [
+      ...(prev || []),
+      { id: `term_${Date.now()}`, title: 'New term', content: '' },
     ]);
   const deleteTerm = (id: string) =>
-    setAgreementTerms(prev => (prev || []).filter(t => t.id !== id));
+    setTerms(prev => (prev || []).filter(t => t.id !== id));
+  const toggleObligations = (id: string) =>
+    setTerms(prev =>
+      (prev || []).map(t =>
+        t.id === id ? { ...t, obligations: t.obligations === undefined ? '' : undefined } : t,
+      ),
+    );
+
+  // ===== Final Commitments CRUD =====
+  const updateFinalCommitment = (id: string, text: string) =>
+    setFinalCommitments(prev => (prev || []).map(f => (f.id === id ? { ...f, text } : f)));
+  const addFinalCommitment = () =>
+    setFinalCommitments(prev => [
+      ...(prev || []),
+      { id: `fc_${Date.now()}`, text: '' },
+    ]);
+  const deleteFinalCommitment = (id: string) =>
+    setFinalCommitments(prev => (prev || []).filter(f => f.id !== id));
 
   // ===== Save =====
   const handleSave = () => {
