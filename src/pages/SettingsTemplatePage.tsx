@@ -47,10 +47,25 @@ interface CommitmentItem {
   checkedByDefault: boolean;
 }
 
-interface AgreementTerm {
+interface AnnexureField {
+  id: string;
+  label: string;
+  isInput: boolean;
+}
+interface Annexure {
+  id: string;
+  title: string;
+  fields: AnnexureField[];
+}
+interface TermCondition {
   id: string;
   title: string;
   content: string;
+  obligations?: string;
+}
+interface FinalCommitment {
+  id: string;
+  text: string;
 }
 
 type TemplateType = 'dealer' | 'farmer' | 'distributor';
@@ -181,27 +196,49 @@ const DISTRIBUTOR_COMMITMENTS: CommitmentItem[] = [
   { id: 'dc5', text: 'Payment & Credit Terms Agreed', checkedByDefault: true },
 ];
 
-const INITIAL_DEALER_AGREEMENT: AgreementTerm[] = [
-  { id: 'a1', title: 'Annexure – A: Territory Coverage', content: 'Talukas covered:\nVillages covered:\nTotal cultivable area:\nMajor crops in territory:' },
-  { id: 'a2', title: 'Annexure – B: Principal Companies & Product Range', content: '1. Principal suppliers:\n2. Chemical products range:\n3. Biological / organic products range:\n4. Other products:' },
-  { id: 'a3', title: 'Annexure – C: Infrastructure Details', content: 'Godown / storage capacity:\nPhotos:' },
-  { id: 'a4', title: 'Annexure – D: Bank & Credit References', content: 'List of references with Name, Contact, and Behavior/Feedback.' },
-  { id: 'a5', title: 'Annexure – E: Monthly Sales Reporting Format', content: 'Confirmation that they will share monthly GLS sales breakup (dealer-wise, crop-wise).' },
-  { id: 'a6', title: 'Annexure – F: Future Expansion Plan', content: 'Their 2-year growth vision and willingness to focus on biologicals.' },
-  { id: 't0', title: 'Terms & Conditions Introduction', content: 'The following terms form an integral part of the Dealer Appointment Letter / MoU and are binding upon signing.' },
+const DEALER_ANNEXURES: Annexure[] = [
+  { id: 'anx1', title: 'Annexure – A: Territory Coverage', fields: [
+    { id: 'f1', label: 'Talukas covered:', isInput: true },
+    { id: 'f2', label: 'Villages covered:', isInput: true },
+    { id: 'f3', label: 'Total cultivable area:', isInput: true },
+    { id: 'f4', label: 'Major crops in territory:', isInput: true },
+  ]},
+  { id: 'anx2', title: 'Annexure – B: Principal Companies & Product Range', fields: [
+    { id: 'f5', label: '1. Principal suppliers:', isInput: true },
+    { id: 'f6', label: '2. Chemical products range:', isInput: true },
+    { id: 'f7', label: '3. Biological / organic products range:', isInput: true },
+    { id: 'f8', label: '4. Other products:', isInput: true },
+  ]},
+  { id: 'anx3', title: 'Annexure – C: Infrastructure Details', fields: [
+    { id: 'f9', label: 'Godown / storage capacity:', isInput: true },
+    { id: 'f10', label: 'Photos required:', isInput: false },
+  ]},
+  { id: 'anx4', title: 'Annexure – D: Bank & Credit References', fields: [
+    { id: 'f11', label: 'List of references with Name, Contact, and Behavior/Feedback.', isInput: true },
+  ]},
+  { id: 'anx5', title: 'Annexure – E: Monthly Sales Reporting Format', fields: [
+    { id: 'f12', label: 'Confirmation that they will share monthly GLS sales breakup.', isInput: false },
+  ]},
+  { id: 'anx6', title: 'Annexure – F: Future Expansion Plan', fields: [
+    { id: 'f13', label: 'Their 2-year growth vision and willingness to focus on biologicals.', isInput: true },
+  ]},
+];
+
+const DEALER_TERMS: TermCondition[] = [
   { id: 't1', title: '1. Territory:', content: 'The Dealer shall operate primarily in the villages / area mentioned in Annexure A. The Dealer agrees not to actively sell GLS products outside the agreed area without prior approval.' },
-  { id: 't2', title: '2. Status & Focus:', content: 'As an Authorised Dealer, the Dealer can directly honour GLS farmer schemes, loyalty benefits, and Farm Card discounts.\nAs an Exclusive Dealer, the Dealer shall focus primarily on GLS biological products and receive maximum field and marketing support.' },
-  { id: 't3', title: '3. Payment Terms:', content: 'Payment to be made to the linked Distributor as per mutually agreed terms.\nTimely payment is essential to maintain smooth supply and scheme benefits.\nDelayed payments may result in temporary suspension of supplies or scheme eligibility.' },
-  { id: 't4', title: '4. Security Deposit:', content: '(if applicable) A nominal refundable security deposit may be required as per Distributor / GLS policy.' },
-  { id: 't5', title: '5. Stock Maintenance:', content: 'The Dealer shall maintain adequate stock of GLS products to meet local farmer demand and shall store them properly (cool, dry place, away from direct sunlight).' },
-  { id: 't6', title: '6. Technical & Marketing Support from GLS:', content: 'Access to dedicated Field Executives for farmer guidance and demonstrations.\nCrop-specific packages, Farm Card + Calendar, application training, and promotional material.\nFull participation in company-funded loyalty program and special schemes.' },
-  { id: 't7', title: '7. Dealer Obligations:', content: '• Promote GLS products following recommended crop packages and practices.\n• Allow GLS Field Executives to engage directly with farmers linked to the shop.\n• Honour Farm Card, loyalty benefits, and crop-specific discounts for eligible farmers.\n• Maintain proper records of sales and farmer feedback.\n• Ensure the shop has valid FCO authorization and Insecticide selling license (where required).\n• Participate in demonstrations, farmer meetings, and training programs organized by GLS.' },
-  { id: 't8', title: '8. Legal & Compliance:', content: 'The Dealer must hold and maintain all necessary licenses (FCO for biofertilizers, Insecticide License for biopesticides, GST, Shop & Establishment). GLS shall not be responsible for any legal issues arising from the Dealer\u2019s non-compliance.' },
-  { id: 't9', title: '9. Data Sharing and Confidentiality:', content: 'The Dealer agrees to share with GLS (and its authorised Field Executives) all necessary data generated during the partnership, including but not limited to:\n• Farmer details (name, contact, farm location, crop history, Farm Card records, application data, yield feedback).\n• Sales records of GLS products.\n• Any other information required for technical support, loyalty program execution, monitoring results, and business improvement.' },
-  { id: 't9a', title: 'Obligations (Under Clause 9):', content: 'All shared data will be used by GLS only for the purpose of supporting farmers, implementing crop packages, running the loyalty program, and strengthening the partnership.\nThe Dealer shall collect farmer consent where personal data is involved and shall comply with applicable data protection laws.\nBoth parties shall keep all shared information confidential and shall not disclose it to any third party without prior written consent, except as required by law.\nUpon termination or request, the Dealer shall return or securely delete all GLS-related data in its possession.\nGLS shall similarly protect any confidential business information of the Dealer.' },
-  { id: 't10', title: '10. Termination:', content: 'Either party may terminate the appointment with 30 days\u2019 written notice. Immediate termination may occur for breach of payment, license violation, misuse of data, or actions damaging GLS reputation. On termination, all pending dues must be settled and remaining stock adjusted.' },
+  { id: 't2', title: '2. Status & Focus:', content: 'As an Authorised Dealer, the Dealer can directly honour GLS farmer schemes... As an Exclusive Dealer, the Dealer shall focus primarily on GLS biological products...' },
+  { id: 't3', title: '3. Payment Terms:', content: 'Payment to be made to the linked Distributor as per mutually agreed terms. Timely payment is essential...' },
+  { id: 't8', title: '8. Legal & Compliance:', content: 'The Dealer must hold and maintain all necessary licenses...' },
+  { id: 't9', title: '9. Data Sharing and Confidentiality:', content: 'The Dealer agrees to share with GLS all necessary data generated during the partnership, including Farmer details and Sales records.', obligations: 'All shared data will be used by GLS only for the purpose of supporting farmers...\nThe Dealer shall collect farmer consent...\nBoth parties shall keep all shared information confidential...' },
+  { id: 't10', title: '10. Termination:', content: 'Either party may terminate the appointment with 30 days written notice...' },
   { id: 't11', title: '11. Jurisdiction:', content: 'All disputes shall be subject to the exclusive jurisdiction of courts in Vadodara, Gujarat.' },
-  { id: 't12', title: 'I/We agree to:', content: '• Promote GLS biological inputs following recommended crop packages.\n• Allow GLS field team to engage with my farmers for demos and support.\n• Honour loyalty program and Farm Card benefits for farmers.\n• Maintain proper storage and display for GLS products.' },
+];
+
+const DEALER_FINAL_COMMITMENTS: FinalCommitment[] = [
+  { id: 'fc1', text: 'Promote GLS biological inputs following recommended crop packages.' },
+  { id: 'fc2', text: 'Allow GLS field team to engage with my farmers for demos and support.' },
+  { id: 'fc3', text: 'Honour loyalty program and Farm Card benefits for farmers.' },
+  { id: 'fc4', text: 'Maintain proper storage and display for GLS products.' },
 ];
 
 const seedCategories = (type: TemplateType): ScoringCategory[] => {
@@ -216,8 +253,12 @@ const seedCommitments = (type: TemplateType): CommitmentItem[] => {
   return DISTRIBUTOR_COMMITMENTS;
 };
 
-const seedAgreement = (type: TemplateType): AgreementTerm[] =>
-  type === 'dealer' ? INITIAL_DEALER_AGREEMENT : [];
+const seedAnnexures = (type: TemplateType): Annexure[] =>
+  type === 'dealer' ? DEALER_ANNEXURES : [];
+const seedTerms = (type: TemplateType): TermCondition[] =>
+  type === 'dealer' ? DEALER_TERMS : [];
+const seedFinalCommitments = (type: TemplateType): FinalCommitment[] =>
+  type === 'dealer' ? DEALER_FINAL_COMMITMENTS : [];
 
 interface SettingsTemplatePageProps {
   type: TemplateType;
@@ -227,7 +268,11 @@ interface SettingsTemplatePageProps {
 const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => {
   const [categories, setCategories] = useState<ScoringCategory[]>(() => seedCategories(type));
   const [commitments, setCommitments] = useState<CommitmentItem[]>(() => seedCommitments(type));
-  const [agreementTerms, setAgreementTerms] = useState<AgreementTerm[]>(() => seedAgreement(type));
+  const [annexures, setAnnexures] = useState<Annexure[]>(() => seedAnnexures(type));
+  const [terms, setTerms] = useState<TermCondition[]>(() => seedTerms(type));
+  const [finalCommitments, setFinalCommitments] = useState<FinalCommitment[]>(() =>
+    seedFinalCommitments(type),
+  );
 
   const totalMax = useMemo(
     () => (categories || []).reduce((sum, c) => sum + (Number(c?.maxScore) || 0), 0),
@@ -304,16 +349,81 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
   const deleteCommitment = (id: string) =>
     setCommitments(prev => (prev || []).filter(c => c.id !== id));
 
-  // ===== Agreement CRUD =====
-  const updateTerm = (id: string, patch: Partial<AgreementTerm>) =>
-    setAgreementTerms(prev => (prev || []).map(t => (t.id === id ? { ...t, ...patch } : t)));
-  const addTerm = () =>
-    setAgreementTerms(prev => [
+  // ===== Annexures CRUD =====
+  const updateAnnexure = (id: string, patch: Partial<Annexure>) =>
+    setAnnexures(prev => (prev || []).map(a => (a.id === id ? { ...a, ...patch } : a)));
+  const addAnnexure = () =>
+    setAnnexures(prev => [
       ...(prev || []),
-      { id: `term_${Date.now()}`, title: 'New clause', content: '' },
+      { id: `anx_${Date.now()}`, title: 'New Annexure', fields: [] },
+    ]);
+  const deleteAnnexure = (id: string) =>
+    setAnnexures(prev => (prev || []).filter(a => a.id !== id));
+  const addAnnexureField = (annexureId: string) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? {
+              ...a,
+              fields: [
+                ...(a.fields || []),
+                { id: `f_${Date.now()}`, label: '', isInput: true },
+              ],
+            }
+          : a,
+      ),
+    );
+  const updateAnnexureField = (
+    annexureId: string,
+    fieldId: string,
+    patch: Partial<AnnexureField>,
+  ) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? {
+              ...a,
+              fields: (a.fields || []).map(f => (f.id === fieldId ? { ...f, ...patch } : f)),
+            }
+          : a,
+      ),
+    );
+  const deleteAnnexureField = (annexureId: string, fieldId: string) =>
+    setAnnexures(prev =>
+      (prev || []).map(a =>
+        a.id === annexureId
+          ? { ...a, fields: (a.fields || []).filter(f => f.id !== fieldId) }
+          : a,
+      ),
+    );
+
+  // ===== Terms CRUD =====
+  const updateTerm = (id: string, patch: Partial<TermCondition>) =>
+    setTerms(prev => (prev || []).map(t => (t.id === id ? { ...t, ...patch } : t)));
+  const addTerm = () =>
+    setTerms(prev => [
+      ...(prev || []),
+      { id: `term_${Date.now()}`, title: 'New term', content: '' },
     ]);
   const deleteTerm = (id: string) =>
-    setAgreementTerms(prev => (prev || []).filter(t => t.id !== id));
+    setTerms(prev => (prev || []).filter(t => t.id !== id));
+  const toggleObligations = (id: string) =>
+    setTerms(prev =>
+      (prev || []).map(t =>
+        t.id === id ? { ...t, obligations: t.obligations === undefined ? '' : undefined } : t,
+      ),
+    );
+
+  // ===== Final Commitments CRUD =====
+  const updateFinalCommitment = (id: string, text: string) =>
+    setFinalCommitments(prev => (prev || []).map(f => (f.id === id ? { ...f, text } : f)));
+  const addFinalCommitment = () =>
+    setFinalCommitments(prev => [
+      ...(prev || []),
+      { id: `fc_${Date.now()}`, text: '' },
+    ]);
+  const deleteFinalCommitment = (id: string) =>
+    setFinalCommitments(prev => (prev || []).filter(f => f.id !== id));
 
   // ===== Save =====
   const handleSave = () => {
@@ -337,11 +447,27 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
         text: c?.text,
         checked_by_default: c?.checkedByDefault,
       })),
-      agreement_schema: (agreementTerms || []).map(t => ({
-        id: t?.id,
-        title: t?.title,
-        content: t?.content,
-      })),
+      agreement_schema: {
+        annexures: (annexures || []).map(a => ({
+          id: a?.id,
+          title: a?.title,
+          fields: (a?.fields || []).map(f => ({
+            id: f?.id,
+            label: f?.label,
+            is_input: f?.isInput,
+          })),
+        })),
+        terms: (terms || []).map(t => ({
+          id: t?.id,
+          title: t?.title,
+          content: t?.content,
+          obligations: t?.obligations,
+        })),
+        final_commitments: (finalCommitments || []).map(f => ({
+          id: f?.id,
+          text: f?.text,
+        })),
+      },
     };
 
     // TODO: supabase.from('form_templates').upsert({ type, scoring_schema, commitments_schema, agreement_schema })
@@ -571,47 +697,195 @@ const SettingsTemplatePage = ({ type, onLogout }: SettingsTemplatePageProps) => 
         </TabsContent>
 
         {/* Tab 3: Legal Agreement */}
-        <TabsContent value="agreement" className="mt-4 space-y-2">
-          <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
-            <FileText className="h-4 w-4" /> Legal Agreement Clauses
-            <span className="ml-auto text-xs text-muted-foreground font-normal">
-              {(agreementTerms || []).length} clauses
-            </span>
-          </h3>
+        <TabsContent value="agreement" className="mt-4 space-y-6">
+          {/* Block 1: Annexures */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Annexures
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(annexures || []).length} annexures
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-3">
+              {(annexures || []).map(anx => (
+                <Card key={anx.id} className="p-3 space-y-3 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={anx?.title || ''}
+                      onChange={e => updateAnnexure(anx.id, { title: e.target.value })}
+                      placeholder="Annexure title"
+                      className="h-9 flex-1 font-medium"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => deleteAnnexure(anx.id)}
+                      aria-label="Delete annexure"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <div className="space-y-2">
+                    {(anx?.fields || []).map(f => (
+                      <div
+                        key={f.id}
+                        className="flex flex-col sm:flex-row sm:items-center gap-2 p-2 rounded-md border border-border bg-muted/30"
+                      >
+                        <Input
+                          value={f?.label || ''}
+                          onChange={e =>
+                            updateAnnexureField(anx.id, f.id, { label: e.target.value })
+                          }
+                          placeholder="Field label / statement"
+                          className="h-9 flex-1"
+                        />
+                        <label className="flex items-center gap-2 text-xs text-muted-foreground whitespace-nowrap">
+                          <Checkbox
+                            checked={!!f?.isInput}
+                            onCheckedChange={v =>
+                              updateAnnexureField(anx.id, f.id, { isInput: !!v })
+                            }
+                          />
+                          Requires SE Input?
+                        </label>
+                        <Button
+                          size="icon"
+                          variant="ghost"
+                          onClick={() => deleteAnnexureField(anx.id, f.id)}
+                          aria-label="Delete field"
+                        >
+                          <X className="h-4 w-4 text-destructive" />
+                        </Button>
+                      </div>
+                    ))}
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => addAnnexureField(anx.id)}
+                      className="gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add field
+                    </Button>
+                  </div>
+                </Card>
+              ))}
+              <Button size="sm" variant="outline" onClick={addAnnexure} className="gap-1">
+                <Plus className="h-4 w-4" /> Add annexure
+              </Button>
+            </div>
+          </section>
+
           <Separator />
 
-          <div className="pt-2 space-y-3">
-            {(agreementTerms || []).map(term => (
-              <Card key={term.id} className="p-3 space-y-2 border border-border">
-                <div className="flex items-center gap-2">
+          {/* Block 2: Terms & Conditions */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <FileText className="h-4 w-4" /> Terms & Conditions
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(terms || []).length} terms
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-3">
+              {(terms || []).map(t => (
+                <Card key={t.id} className="p-3 space-y-2 border border-border">
+                  <div className="flex items-center gap-2">
+                    <Input
+                      value={t?.title || ''}
+                      onChange={e => updateTerm(t.id, { title: e.target.value })}
+                      placeholder="Term title"
+                      className="h-9 flex-1 font-medium"
+                    />
+                    <Button
+                      size="icon"
+                      variant="ghost"
+                      onClick={() => deleteTerm(t.id)}
+                      aria-label="Delete term"
+                    >
+                      <Trash2 className="h-4 w-4 text-destructive" />
+                    </Button>
+                  </div>
+                  <Textarea
+                    value={t?.content || ''}
+                    onChange={e => updateTerm(t.id, { content: e.target.value })}
+                    placeholder="Term content"
+                    className="min-h-[100px] text-sm"
+                  />
+                  {t?.obligations !== undefined ? (
+                    <div className="space-y-1">
+                      <label className="text-xs text-muted-foreground">Obligations Details</label>
+                      <Textarea
+                        value={t?.obligations || ''}
+                        onChange={e => updateTerm(t.id, { obligations: e.target.value })}
+                        placeholder="Obligations under this term"
+                        className="min-h-[100px] text-sm bg-muted"
+                      />
+                      <Button
+                        size="sm"
+                        variant="ghost"
+                        onClick={() => toggleObligations(t.id)}
+                        className="gap-1 text-destructive"
+                      >
+                        <X className="h-4 w-4" /> Remove obligations
+                      </Button>
+                    </div>
+                  ) : (
+                    <Button
+                      size="sm"
+                      variant="outline"
+                      onClick={() => toggleObligations(t.id)}
+                      className="gap-1"
+                    >
+                      <Plus className="h-4 w-4" /> Add obligations section
+                    </Button>
+                  )}
+                </Card>
+              ))}
+              <Button size="sm" variant="outline" onClick={addTerm} className="gap-1">
+                <Plus className="h-4 w-4" /> Add term
+              </Button>
+            </div>
+          </section>
+
+          <Separator />
+
+          {/* Block 3: I/We Agree To */}
+          <section className="space-y-2">
+            <h3 className="text-sm font-semibold text-primary flex items-center gap-2">
+              <CheckCircle2 className="h-4 w-4" /> I / We Agree To (Final Commitments)
+              <span className="ml-auto text-xs text-muted-foreground font-normal">
+                {(finalCommitments || []).length} items
+              </span>
+            </h3>
+            <Separator />
+            <div className="pt-2 space-y-2">
+              {(finalCommitments || []).map(fc => (
+                <div
+                  key={fc.id}
+                  className="flex items-center gap-2 p-2 rounded-md border border-border bg-card"
+                >
                   <Input
-                    value={term?.title || ''}
-                    onChange={e => updateTerm(term.id, { title: e.target.value })}
-                    placeholder="Clause title"
-                    className="h-9 flex-1 font-medium"
+                    value={fc?.text || ''}
+                    onChange={e => updateFinalCommitment(fc.id, e.target.value)}
+                    placeholder="Commitment text"
+                    className="h-9 flex-1"
                   />
                   <Button
                     size="icon"
                     variant="ghost"
-                    onClick={() => deleteTerm(term.id)}
-                    aria-label="Delete clause"
+                    onClick={() => deleteFinalCommitment(fc.id)}
+                    aria-label="Delete commitment"
                   >
                     <Trash2 className="h-4 w-4 text-destructive" />
                   </Button>
                 </div>
-                <Textarea
-                  value={term?.content || ''}
-                  onChange={e => updateTerm(term.id, { content: e.target.value })}
-                  placeholder="Clause content"
-                  className="min-h-[100px] text-sm"
-                />
-              </Card>
-            ))}
-
-            <Button size="sm" variant="outline" onClick={addTerm} className="gap-1">
-              <Plus className="h-4 w-4" /> Add new clause
-            </Button>
-          </div>
+              ))}
+              <Button size="sm" variant="outline" onClick={addFinalCommitment} className="gap-1">
+                <Plus className="h-4 w-4" /> Add commitment
+              </Button>
+            </div>
+          </section>
         </TabsContent>
       </Tabs>
 
