@@ -1,29 +1,45 @@
 import { useEffect, useState } from 'react';
-import { getFarmers } from '@/services/mockDirectoryData';
-import { Farmer } from '@/types/farmer';
-import FarmerTable from '@/components/FarmerTable';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import FarmerTable, { FarmerRow } from '@/components/FarmerTable';
+import FarmerDetailSheet from '@/components/FarmerDetailSheet';
+import { Loader2 } from 'lucide-react';
 
-interface FarmersPageProps {
-  onLogout: () => void;
-}
+interface Props { onLogout: () => void; }
 
-const FarmersPage = ({ onLogout }: FarmersPageProps) => {
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
+const FarmersPage = ({ onLogout }: Props) => {
+  const [rows, setRows] = useState<FarmerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<FarmerRow | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    getFarmers().then(setFarmers);
-  }, []);
+    (async () => {
+      const { data, error } = await supabase
+        .from('farmers')
+        .select('*, profiles:se_id(name)')
+        .order('created_at', { ascending: false });
+      if (error) toast({ title: 'Failed to load', description: error.message, variant: 'destructive' });
+      setRows((data || []) as any);
+      setLoading(false);
+    })();
+  }, [toast]);
 
   return (
     <AppLayout onLogout={onLogout}>
       <div>
         <h2 className="text-lg font-semibold mb-1">Farmer Directory</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Review farmers onboarded by field SEs. {farmers.length} total records.
+          {(rows || []).length} total records onboarded by field SEs.
         </p>
-        <FarmerTable farmers={farmers} />
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <FarmerTable rows={rows} onSelect={setSelected} />
+        )}
       </div>
+      <FarmerDetailSheet farmer={selected} open={!!selected} onClose={() => setSelected(null)} />
     </AppLayout>
   );
 };

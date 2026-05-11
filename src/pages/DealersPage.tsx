@@ -1,45 +1,45 @@
 import { useEffect, useState } from 'react';
-import { getDealers } from '@/services/mockData';
-import { Dealer } from '@/types/dealer';
-import DealerTable from '@/components/DealerTable';
-import DealerDetail from '@/components/DealerDetail';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import DealerTable, { DealerRow } from '@/components/DealerTable';
+import DealerDetailSheet from '@/components/DealerDetailSheet';
+import { Loader2 } from 'lucide-react';
 
-interface DealersPageProps {
-  onLogout: () => void;
-}
+interface Props { onLogout: () => void; }
 
-const DealersPage = ({ onLogout }: DealersPageProps) => {
-  const [dealers, setDealers] = useState<Dealer[]>([]);
-  const [selectedDealer, setSelectedDealer] = useState<Dealer | null>(null);
+const DealersPage = ({ onLogout }: Props) => {
+  const [rows, setRows] = useState<DealerRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<DealerRow | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    getDealers().then(data => setDealers(data || []));
-  }, []);
-
-  const handleToggleActive = (id: string, value: boolean) => {
-    setDealers(prev => (prev || []).map(d => (d.id === id ? { ...d, is_active: value } : d)));
-  };
-
+    (async () => {
+      const { data, error } = await supabase
+        .from('dealers')
+        .select('*, profiles:se_id(name)')
+        .order('created_at', { ascending: false });
+      if (error) toast({ title: 'Failed to load', description: error.message, variant: 'destructive' });
+      setRows((data || []) as any);
+      setLoading(false);
+    })();
+  }, [toast]);
 
   return (
     <AppLayout onLogout={onLogout}>
       <div>
         <h2 className="text-lg font-semibold mb-1">Dealer Directory</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Review dealers onboarded by field SEs. {(dealers || []).length} total records.
+          {(rows || []).length} total records onboarded by field SEs.
         </p>
-        <DealerTable
-          dealers={dealers}
-          onSelectDealer={setSelectedDealer}
-          onToggleActive={handleToggleActive}
-        />
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <DealerTable rows={rows} onSelect={setSelected} />
+        )}
       </div>
-      <DealerDetail
-        dealer={selectedDealer}
-        open={!!selectedDealer}
-        onClose={() => setSelectedDealer(null)}
-      />
+      <DealerDetailSheet dealer={selected} open={!!selected} onClose={() => setSelected(null)} />
     </AppLayout>
   );
 };
