@@ -8,6 +8,7 @@ import {
   Sprout,
   Settings,
   ChevronDown,
+  UserCog,
 } from 'lucide-react';
 import { cn } from '@/lib/utils';
 import {
@@ -18,9 +19,10 @@ import {
 
 const navItems = [
   { to: '/dashboard', label: 'Dashboard', icon: LayoutDashboard, end: true },
+  { to: '/sales-executives', label: 'Sales Executives', icon: UserCog },
+  { to: '/distributors', label: 'Distributors', icon: Truck },
   { to: '/dealers', label: 'Dealers', icon: Users },
   { to: '/farmers', label: 'Farmers', icon: Wheat },
-  { to: '/distributors', label: 'Distributors', icon: Truck },
 ];
 
 const settingsChildren = [
