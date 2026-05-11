@@ -1,175 +1,93 @@
-import { useMemo, useState, useEffect } from 'react';
-import { Distributor } from '@/types/distributor';
 import { Badge } from '@/components/ui/badge';
-import { Switch } from '@/components/ui/switch';
-import { DataTable, DataTableColumn, DataTableFilter } from './DataTable';
-import { Phone, Warehouse, User } from 'lucide-react';
+import { DataTable, DataTableColumn } from './DataTable';
+import { MapPin, Phone, Building2 } from 'lucide-react';
 
-interface DistributorTableProps {
-  distributors: Distributor[];
+export interface DistributorRow {
+  id: string;
+  se_id: string | null;
+  firm_name: string | null;
+  owner_name: string | null;
+  contact_mobile: string | null;
+  city: string | null;
+  state: string | null;
+  band: string | null;
+  total_score: number | null;
+  status: string | null;
+  created_at: string;
+  pdf_url?: string | null;
+  address?: string | null;
+  gst_number?: string | null;
+  pan_number?: string | null;
+  firm_type?: string | null;
+  est_year?: string | null;
+  taluka?: string | null;
+  pincode?: string | null;
+  email?: string | null;
+  contact_person?: string | null;
+  bank_details?: any; scoring?: any; business_scope?: any; dealer_network?: any;
+  commitments?: any; documents?: any; annexures?: any; raw_data?: any;
+  profiles?: { name: string | null } | null;
 }
 
-const statusBadge = (s: Distributor['status']) => {
-  const map: Record<Distributor['status'], string> = {
-    DRAFT: 'bg-muted text-muted-foreground',
-    SUBMITTED: 'bg-[hsl(var(--badge-yellow-bg))] text-[hsl(var(--badge-yellow-text))]',
-    APPROVED: 'bg-[hsl(var(--badge-green-bg))] text-[hsl(var(--badge-green-text))]',
-  };
-  return <Badge className={`${map[s]} hover:${map[s]} border-0`}>{s}</Badge>;
+const bandVariant = (b?: string | null) => {
+  if (!b) return 'secondary' as const;
+  const v = b.toLowerCase();
+  if (v.includes('green') || v === 'a') return 'default' as const;
+  if (v.includes('red') || v === 'c') return 'destructive' as const;
+  return 'secondary' as const;
 };
 
-const DistributorTable = ({ distributors }: DistributorTableProps) => {
-  const [rows, setRows] = useState<Distributor[]>(distributors || []);
-
-  useEffect(() => setRows(distributors || []), [distributors]);
-
-  const seNames = useMemo(() => [...new Set((rows || []).map(d => d?.se_name).filter(Boolean))], [rows]);
-  const locations = useMemo(
-    () => [...new Set((rows || []).map(d => `${d?.region}, ${d?.state}`).filter(s => s && s !== ', '))],
-    [rows],
-  );
-
-  const toggleActive = (id: string, value: boolean) => {
-    setRows(prev => (prev || []).map(d => (d.id === id ? { ...d, is_active: value } : d)));
-  };
-
-  const columns: DataTableColumn<Distributor>[] = [
+const DistributorTable = ({ rows, onSelect }: { rows: DistributorRow[]; onSelect: (r: DistributorRow) => void }) => {
+  const columns: DataTableColumn<DistributorRow>[] = [
     {
-      key: 'firm_name',
-      header: 'Firm Name',
-      accessor: d => <span className="font-medium">{d?.firm_name}</span>,
-      sortValue: d => (d?.firm_name || '').toLowerCase(),
-      sortable: true,
-    },
-    {
-      key: 'owner_name',
-      header: 'Owner',
-      accessor: d => (
-        <div className="flex items-center gap-1.5">
-          <User className="h-3.5 w-3.5 text-muted-foreground" />
-          {d?.owner_name}
-        </div>
-      ),
-      sortValue: d => (d?.owner_name || '').toLowerCase(),
-      sortable: true,
-    },
-    {
-      key: 'contact_mobile',
-      header: 'Contact',
-      accessor: d => (
-        <div className="flex items-center gap-1.5 whitespace-nowrap">
-          <Phone className="h-3.5 w-3.5 text-muted-foreground" />
-          {d?.contact_mobile}
+      key: 'firm_name', header: 'Firm Name', sortable: true, sortValue: r => (r?.firm_name || '').toLowerCase(),
+      accessor: r => (
+        <div className="flex items-center gap-2">
+          <Building2 className="h-4 w-4 text-muted-foreground shrink-0" />
+          <span className="font-medium">{r?.firm_name || 'Unnamed'}</span>
         </div>
       ),
     },
+    { key: 'owner_name', header: 'Owner', accessor: r => r?.owner_name || '—', sortable: true, sortValue: r => (r?.owner_name || '').toLowerCase() },
     {
-      key: 'region',
-      header: 'Region / State',
-      accessor: d => `${d?.region}, ${d?.state}`,
-      sortValue: d => d?.region || '',
-      sortable: true,
+      key: 'contact_mobile', header: 'Mobile',
+      accessor: r => r?.contact_mobile ? (
+        <span className="inline-flex items-center gap-1.5"><Phone className="h-3.5 w-3.5 text-muted-foreground" />{r.contact_mobile}</span>
+      ) : '—',
     },
     {
-      key: 'warehouse_capacity_tons',
-      header: 'Capacity (T)',
-      accessor: d => (
-        <div className="flex items-center justify-center gap-1.5">
-          <Warehouse className="h-3.5 w-3.5 text-muted-foreground" />
-          {d?.warehouse_capacity_tons}
-        </div>
-      ),
-      sortValue: d => d?.warehouse_capacity_tons ?? 0,
-      sortable: true,
-      className: 'text-center',
-      headerClassName: 'font-semibold text-center whitespace-nowrap',
-    },
-    {
-      key: 'product_categories',
-      header: 'Categories',
-      accessor: d => <span className="text-muted-foreground">{d?.product_categories}</span>,
-    },
-    {
-      key: 'se_name',
-      header: 'SE',
-      accessor: d => <span className="text-muted-foreground">{d?.se_name}</span>,
-      sortValue: d => d?.se_name || '',
-      sortable: true,
-    },
-    {
-      key: 'created_at',
-      header: 'Latest',
-      accessor: d => (
-        <span className="text-xs text-muted-foreground whitespace-nowrap">
-          {d?.created_at ? new Date(d.created_at).toLocaleDateString() : '-'}
+      key: 'city', header: 'City',
+      accessor: r => (
+        <span className="inline-flex items-center gap-1.5">
+          <MapPin className="h-3.5 w-3.5 text-muted-foreground" />
+          {[r?.city, r?.state].filter(Boolean).join(', ') || '—'}
         </span>
       ),
-      sortValue: d => (d?.created_at ? new Date(d.created_at).getTime() : 0),
-      sortable: true,
     },
+    { key: 'se', header: 'Onboarded By', accessor: r => <span className="text-muted-foreground text-sm">{r?.profiles?.name || '—'}</span> },
     {
-      key: 'status',
-      header: 'Status',
-      accessor: d => statusBadge(d?.status),
-      sortValue: d => d?.status || '',
-      sortable: true,
-      className: 'text-center',
-      headerClassName: 'font-semibold text-center whitespace-nowrap',
-    },
-    {
-      key: 'is_active',
-      header: 'Access',
-      accessor: d => (
-        <div className="flex items-center justify-center">
-          <Switch
-            checked={!!d?.is_active}
-            onCheckedChange={v => toggleActive(d.id, v)}
-            aria-label="Toggle active"
-          />
+      key: 'band', header: 'Band / Score', className: 'text-center', headerClassName: 'font-semibold text-center',
+      accessor: r => (
+        <div className="flex flex-col items-center gap-0.5">
+          <Badge variant={bandVariant(r?.band)}>{r?.band || 'N/A'}</Badge>
+          {r?.total_score != null && <span className="text-xs text-muted-foreground">{r.total_score}</span>}
         </div>
       ),
-      sortValue: d => (d?.is_active ? 1 : 0),
-      sortable: true,
-      className: 'text-center',
-      headerClassName: 'font-semibold text-center whitespace-nowrap',
-    },
-  ];
-
-  const filters: DataTableFilter<Distributor>[] = [
-    {
-      key: 'active',
-      label: 'Status',
-      options: [
-        { value: 'active', label: 'Active' },
-        { value: 'inactive', label: 'Inactive' },
-      ],
-      predicate: (d, v) => (v === 'active' ? !!d?.is_active : !d?.is_active),
-      width: 'w-full sm:w-[140px]',
     },
     {
-      key: 'location',
-      label: 'Location',
-      options: locations.map(l => ({ value: l, label: l })),
-      predicate: (d, v) => `${d?.region}, ${d?.state}` === v,
-      width: 'w-full sm:w-[180px]',
-    },
-    {
-      key: 'se',
-      label: 'SE',
-      options: seNames.map(n => ({ value: n, label: n })),
-      predicate: (d, v) => d?.se_name === v,
-      width: 'w-full sm:w-[160px]',
+      key: 'status', header: 'Status', className: 'text-center', headerClassName: 'font-semibold text-center',
+      accessor: r => <Badge variant={r?.status === 'APPROVED' ? 'default' : 'secondary'}>{r?.status || 'DRAFT'}</Badge>,
     },
   ];
 
   return (
     <DataTable
-      data={rows}
+      data={rows || []}
       columns={columns}
-      filters={filters}
       searchPlaceholder="Search distributors..."
-      searchAccessor={d => `${d?.firm_name || ''} ${d?.owner_name || ''} ${d?.contact_mobile || ''} ${d?.region || ''} ${d?.gst_number || ''}`}
-      rowKey={d => d.id}
+      searchAccessor={r => `${r?.firm_name || ''} ${r?.owner_name || ''} ${r?.contact_mobile || ''} ${r?.city || ''}`}
+      rowKey={r => r.id}
+      onRowClick={onSelect}
       emptyMessage="No distributors found."
     />
   );

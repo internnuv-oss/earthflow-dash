@@ -1,106 +1,64 @@
-import { useState, useEffect, useMemo } from 'react';
-import { getDealers } from '@/services/mockData';
-import { getFarmers, getDistributors } from '@/services/mockDirectoryData';
-import { Dealer } from '@/types/dealer';
-import { Farmer } from '@/types/farmer';
-import { Distributor } from '@/types/distributor';
+import { useEffect, useState } from 'react';
+import { supabase } from '@/integrations/supabase/client';
 import KpiCard from '@/components/KpiCard';
 import AppLayout from '@/components/AppLayout';
-import { Users, Clock, AlertTriangle, Wheat, Truck, UserCog } from 'lucide-react';
+import { Users, Clock, Wheat, Truck, UserCog, CheckCircle2 } from 'lucide-react';
 
-interface DashboardProps {
-  onLogout: () => void;
+interface DashboardProps { onLogout: () => void; }
+
+interface Counts {
+  ses: number; sesComplete: number;
+  distributors: number; distributorsPending: number;
+  dealers: number; dealersPending: number;
+  farmers: number; farmersPending: number;
 }
 
 const Dashboard = ({ onLogout }: DashboardProps) => {
-  const [dealers, setDealers] = useState<Dealer[]>([]);
-  const [farmers, setFarmers] = useState<Farmer[]>([]);
-  const [distributors, setDistributors] = useState<Distributor[]>([]);
+  const [c, setC] = useState<Counts>({
+    ses: 0, sesComplete: 0, distributors: 0, distributorsPending: 0,
+    dealers: 0, dealersPending: 0, farmers: 0, farmersPending: 0,
+  });
 
   useEffect(() => {
-    getDealers().then(data => setDealers(data || []));
-    getFarmers().then(data => setFarmers(data || []));
-    getDistributors().then(data => setDistributors(data || []));
+    (async () => {
+      const head = { count: 'exact' as const, head: true };
+      const [ses, sesC, dist, distP, deal, dealP, farm, farmP] = await Promise.all([
+        supabase.from('profiles').select('id', head).eq('role', 'SE'),
+        supabase.from('sales_executive').select('profile_id', head).eq('is_profile_complete', true),
+        supabase.from('distributors').select('id', head),
+        supabase.from('distributors').select('id', head).eq('status', 'DRAFT'),
+        supabase.from('dealers').select('id', head),
+        supabase.from('dealers').select('id', head).eq('status', 'DRAFT'),
+        supabase.from('farmers').select('id', head),
+        supabase.from('farmers').select('id', head).eq('status', 'DRAFT'),
+      ]);
+      setC({
+        ses: ses.count || 0, sesComplete: sesC.count || 0,
+        distributors: dist.count || 0, distributorsPending: distP.count || 0,
+        dealers: deal.count || 0, dealersPending: dealP.count || 0,
+        farmers: farm.count || 0, farmersPending: farmP.count || 0,
+      });
+    })();
   }, []);
 
-  const kpis = useMemo(() => {
-    const safeDealers = dealers || [];
-    const safeFarmers = farmers || [];
-    const safeDistributors = distributors || [];
-
-    const seIds = new Set<string>();
-    safeDealers.forEach(d => d?.se_id && seIds.add(d.se_id));
-    safeFarmers.forEach(f => f?.se_id && seIds.add(f.se_id));
-    safeDistributors.forEach(d => d?.se_id && seIds.add(d.se_id));
-
-    const pending =
-      safeDealers.filter(d => d?.status === 'DRAFT').length +
-      safeFarmers.filter(f => f?.status === 'DRAFT').length +
-      safeDistributors.filter(d => d?.status === 'DRAFT').length;
-
-    const redCount = safeDealers.filter(d => d?.recommendation === 'Red').length;
-
-    return {
-      totalDealers: safeDealers.length,
-      totalFarmers: safeFarmers.length,
-      totalDistributors: safeDistributors.length,
-      totalSEs: seIds.size,
-      pending,
-      redCount,
-    };
-  }, [dealers, farmers, distributors]);
+  const totalPending = (c?.distributorsPending || 0) + (c?.dealersPending || 0) + (c?.farmersPending || 0);
 
   return (
     <AppLayout onLogout={onLogout}>
       <div>
         <h2 className="text-lg font-semibold mb-1">Overview</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Global command center across dealers, distributors, and farmers.
+          Live command center across sales executives, distributors, dealers, and farmers.
         </p>
       </div>
 
       <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-6 gap-4">
-        <KpiCard
-          title="Total Dealers"
-          value={kpis.totalDealers}
-          icon={Users}
-          description="View dealer directory"
-          to="/dealers"
-        />
-        <KpiCard
-          title="Total Distributors"
-          value={kpis.totalDistributors}
-          icon={Truck}
-          description="View distributors"
-          to="/distributors"
-        />
-        <KpiCard
-          title="Total Farmers"
-          value={kpis.totalFarmers}
-          icon={Wheat}
-          description="View farmers"
-          to="/farmers"
-        />
-        <KpiCard
-          title="Total SEs"
-          value={kpis.totalSEs}
-          icon={UserCog}
-          description="Active sales executives"
-        />
-        <KpiCard
-          title="Pending Approvals"
-          value={kpis.pending}
-          icon={Clock}
-          description="Drafts across all directories"
-          accent="muted"
-        />
-        <KpiCard
-          title="High Risk"
-          value={kpis.redCount}
-          icon={AlertTriangle}
-          description="Red recommendation dealers"
-          accent="destructive"
-        />
+        <KpiCard title="Sales Executives" value={c.ses} icon={UserCog} description="Active SEs in territory" to="/sales-executives" />
+        <KpiCard title="SE Profiles Complete" value={c.sesComplete} icon={CheckCircle2} description="Finished mobile onboarding" />
+        <KpiCard title="Distributors" value={c.distributors} icon={Truck} description="View directory" to="/distributors" />
+        <KpiCard title="Dealers" value={c.dealers} icon={Users} description="View directory" to="/dealers" />
+        <KpiCard title="Farmers" value={c.farmers} icon={Wheat} description="View directory" to="/farmers" />
+        <KpiCard title="Pending Approvals" value={totalPending} icon={Clock} description="Drafts across all directories" accent="muted" />
       </div>
     </AppLayout>
   );

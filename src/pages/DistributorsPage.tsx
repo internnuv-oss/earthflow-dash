@@ -1,29 +1,45 @@
 import { useEffect, useState } from 'react';
-import { getDistributors } from '@/services/mockDirectoryData';
-import { Distributor } from '@/types/distributor';
-import DistributorTable from '@/components/DistributorTable';
+import { supabase } from '@/integrations/supabase/client';
+import { useToast } from '@/hooks/use-toast';
 import AppLayout from '@/components/AppLayout';
+import DistributorTable, { DistributorRow } from '@/components/DistributorTable';
+import DistributorDetailSheet from '@/components/DistributorDetailSheet';
+import { Loader2 } from 'lucide-react';
 
-interface DistributorsPageProps {
-  onLogout: () => void;
-}
+interface Props { onLogout: () => void; }
 
-const DistributorsPage = ({ onLogout }: DistributorsPageProps) => {
-  const [distributors, setDistributors] = useState<Distributor[]>([]);
+const DistributorsPage = ({ onLogout }: Props) => {
+  const [rows, setRows] = useState<DistributorRow[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [selected, setSelected] = useState<DistributorRow | null>(null);
+  const { toast } = useToast();
 
   useEffect(() => {
-    getDistributors().then(setDistributors);
-  }, []);
+    (async () => {
+      const { data, error } = await supabase
+        .from('distributors')
+        .select('*, profiles:se_id(name)')
+        .order('created_at', { ascending: false });
+      if (error) toast({ title: 'Failed to load', description: error.message, variant: 'destructive' });
+      setRows((data || []) as any);
+      setLoading(false);
+    })();
+  }, [toast]);
 
   return (
     <AppLayout onLogout={onLogout}>
       <div>
         <h2 className="text-lg font-semibold mb-1">Distributor Directory</h2>
         <p className="text-sm text-muted-foreground mb-4">
-          Review distributors onboarded by field SEs. {distributors.length} total records.
+          {(rows || []).length} total records onboarded by field SEs.
         </p>
-        <DistributorTable distributors={distributors} />
+        {loading ? (
+          <div className="flex justify-center py-12"><Loader2 className="h-5 w-5 animate-spin text-muted-foreground" /></div>
+        ) : (
+          <DistributorTable rows={rows} onSelect={setSelected} />
+        )}
       </div>
+      <DistributorDetailSheet distributor={selected} open={!!selected} onClose={() => setSelected(null)} />
     </AppLayout>
   );
 };

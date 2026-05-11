@@ -1,36 +1,45 @@
 import { useState } from 'react';
-import { Link } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Card, CardContent, CardDescription, CardHeader, CardTitle } from '@/components/ui/card';
 import { Sprout, Loader2 } from 'lucide-react';
 import { useToast } from '@/hooks/use-toast';
+import { supabase } from '@/integrations/supabase/client';
 
-interface LoginPageProps {
-  onLogin: () => void;
-}
-
-const LoginPage = ({ onLogin }: LoginPageProps) => {
+const LoginPage = () => {
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
+  const [mode, setMode] = useState<'signin' | 'signup'>('signin');
   const [loading, setLoading] = useState(false);
   const { toast } = useToast();
+  const navigate = useNavigate();
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setLoading(true);
-
-    // Mock auth - in production, connect to Supabase
-    await new Promise(resolve => setTimeout(resolve, 800));
-
-    if (email && password) {
-      toast({ title: 'Welcome back!', description: 'Logged in as Territory Head.' });
-      onLogin();
-    } else {
-      toast({ title: 'Error', description: 'Please enter credentials.', variant: 'destructive' });
+    try {
+      if (mode === 'signin') {
+        const { error } = await supabase.auth.signInWithPassword({ email, password });
+        if (error) throw error;
+        toast({ title: 'Welcome back!' });
+        navigate('/dashboard', { replace: true });
+      } else {
+        const { error } = await supabase.auth.signUp({
+          email,
+          password,
+          options: { emailRedirectTo: `${window.location.origin}/dashboard` },
+        });
+        if (error) throw error;
+        toast({ title: 'Account created', description: 'Check your inbox to confirm your email.' });
+        setMode('signin');
+      }
+    } catch (err: any) {
+      toast({ title: 'Authentication error', description: err?.message || 'Try again.', variant: 'destructive' });
+    } finally {
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   return (
@@ -41,41 +50,27 @@ const LoginPage = ({ onLogin }: LoginPageProps) => {
             <Sprout className="h-7 w-7 text-primary" />
           </div>
           <CardTitle className="text-2xl font-bold">AgriDealer Admin</CardTitle>
-          <CardDescription>Territory Head Dashboard Login</CardDescription>
+          <CardDescription>{mode === 'signin' ? 'Territory Head Dashboard Login' : 'Create an admin account'}</CardDescription>
         </CardHeader>
         <CardContent>
           <form onSubmit={handleSubmit} className="space-y-4">
             <div className="space-y-2">
               <Label htmlFor="email">Email</Label>
-              <Input
-                id="email"
-                type="email"
-                placeholder="th@agridealer.com"
-                value={email}
-                onChange={e => setEmail(e.target.value)}
-                required
-              />
+              <Input id="email" type="email" placeholder="th@agridealer.com" value={email} onChange={e => setEmail(e.target.value)} required />
             </div>
             <div className="space-y-2">
               <Label htmlFor="password">Password</Label>
-              <Input
-                id="password"
-                type="password"
-                placeholder="••••••••"
-                value={password}
-                onChange={e => setPassword(e.target.value)}
-                required
-              />
+              <Input id="password" type="password" placeholder="••••••••" value={password} onChange={e => setPassword(e.target.value)} required minLength={6} />
             </div>
             <Button type="submit" className="w-full" disabled={loading}>
               {loading ? <Loader2 className="mr-2 h-4 w-4 animate-spin" /> : null}
-              Sign In
+              {mode === 'signin' ? 'Sign In' : 'Create Account'}
             </Button>
             <p className="text-xs text-center text-muted-foreground">
-              New Territory Head?{' '}
-              <Link to="/register" className="text-primary font-medium hover:underline">
-                Create an account
-              </Link>
+              {mode === 'signin' ? "Don't have an account?" : 'Already registered?'}{' '}
+              <button type="button" onClick={() => setMode(mode === 'signin' ? 'signup' : 'signin')} className="text-primary font-medium hover:underline">
+                {mode === 'signin' ? 'Sign up' : 'Sign in'}
+              </button>
             </p>
           </form>
         </CardContent>
